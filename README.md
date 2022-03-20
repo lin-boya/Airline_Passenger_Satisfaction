@@ -7,8 +7,9 @@ To achieve this goal, the Airline Passenger Satisfaction dataset will be used to
 
 The conclusions reached at the end of the project can be used to predict the choice of the airline companies that customers will make during planning the journey and help airline companies improve the service and passengers’ experience.
 
-● Source
+#### Source
 The data comes from Kaggle modified by TJ Klein who works in the data storage industry from this dataset by John D. The dataset contains the feedback of an airline passenger satisfaction survey with 23 judging criteria from 25977 passengers.
-● Link
+
+#### Link
 https://www.kaggle.com/johndddddd/customer-satisfaction (original data by John D )
 https://www.kaggle.com/teejmahal20/airline-passenger-satisfaction (modified version)
