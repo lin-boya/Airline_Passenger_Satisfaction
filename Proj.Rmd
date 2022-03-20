@@ -1,0 +1,219 @@
+---
+title: "Project"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Introduction
+With the development of our modern society, we noticed that there is an increasing number of people exploring the world relying on airplanes, which effectively shortens the time and distance for journeys. However, we still hear a lot of negative feedback about the ride experience such as complaints about flight delays, terrible food, or in-flight services. In our project, we are going to explore the factors that influence passenger satisfaction in both positive and negative ways.    
+
+To achieve this goal, we will use the Airline Passenger Satisfaction dataset to analyze the correlation between passenger satisfaction and possible factors. We will sort each factor into different ranking levels, then look at the impact of ease of booking, cabin class, and flight distance which are decided before boarding. We will see whether the customer type and the cabin class can raise satisfaction effectively or their impact can be  countervailed by short flight distance. Furthermore, we will examine the influence that the existence of delay, comfort, and cleanliness of the environment, quality of food, and inflight entertainment have on the satisfaction of passengers during the flight. The conclusions reached at the end of the project can be used to predict the choice of the airline companies that customers will make during planning the journey and help airline companies improve the service and passengers’ experience.    
+
+
+### Background
+Our dataset, can be downloaded from https://www.kaggle.com/teejmahal20/airline-passenger-satisfaction, it contains
+129880 observations and 24 variables. The data set contains two customer type: disloyal customer and loyal customer, it has two travel type: business travel and personal travel. All the flights has three classes: business economy and economy plus. This dataset contains an airline passenger satisfaction survey with following variables:
+
+- Satisfaction:Airline satisfaction level(Satisfaction, neutral or dissatisfaction)
+
+- Age:The actual age of the passengers
+
+- Gender:Gender of the passengers (Female, Male)
+
+- Type of Travel:Purpose of the flight of the passengers (Personal Travel, Business Travel)
+
+- Class:Travel class in the plane of the passengers (Business, Eco, Eco Plus)
+
+- Customer Type:The customer type (Loyal customer, disloyal customer)
+
+- Flight distance:The flight distance of this journey
+
+- Inflight wifi service:Satisfaction level of the inflight wifi service (0:Not Applicable;1-5)
+
+- Ease of Online booking:Satisfaction level of online booking
+
+- Inflight service:Satisfaction level of inflight service
+
+- Online boarding:Satisfaction level of online boarding
+
+- Inflight entertainment:Satisfaction level of inflight entertainment
+
+- Food and drink:Satisfaction level of Food and drink
+
+- Seat comfort:Satisfaction level of Seat comfort
+
+- On-board service:Satisfaction level of On-board service
+
+- Leg room service:Satisfaction level of Leg room service
+
+- Departure/Arrival time convenient:Satisfaction level of Departure/Arrival time convenient
+
+- Baggage handling:Satisfaction level of baggage handling
+
+- Gate location:Satisfaction level of Gate location
+
+- Cleanliness:Satisfaction level of Cleanliness
+
+- Check-in service:Satisfaction level of Check-in service
+
+- Departure Delay in Minutes:Minutes delayed when departure
+
+- Arrival Delay in Minutes:Minutes delayed when Arrival
+
+- Flight cancelled:Whether the Flight cancelled or not (Yes, No)
+
+- Flight time in minutes:Minutes of Flight takes
+
+### Data Exploration
+```{r message=F, warning=F, echo=F}
+library(readxl)
+library(tidyverse)
+library(janitor)
+sat <- read_excel("satisfaction.xlsx")
+dim(sat)
+# clean data
+sat <- clean_names(sat)
+sat$satisfaction_v2 <- as.factor(sat$satisfaction_v2)
+sat$gender <- as.factor(sat$gender)
+sat$customer_type <- as.factor(sat$customer_type)
+sat$type_of_travel <- as.factor(sat$type_of_travel)
+sat$class <- as.factor(sat$class)
+# remove na rows
+sat <- na.omit(sat)
+dim(sat)
+```
+
+Find the number of customers who are satisfied with the flights and who are netural or dissatisfied with the flights, the draw a bar plot, we can see from the plot, the number of customers who are satisfied with the flights is larger than the number of customers who are dissatisfied with the flights.
+
+```{r}
+ggplot(data=sat, aes(x=satisfaction_v2)) + geom_bar(fill="orange") +
+  labs(x="Satisfaction", y="Count", title="Count of satisfied or dissatisfied") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+  
+The distribution of arrival delay in minutes is right skewed and uni-model, most of the arrival delay in minutes are below 200 minutes.
+```{r}
+ggplot(data=sat, aes(x=arrival_delay_in_minutes)) + geom_histogram(bins=30, fill="steelblue") +
+  labs(x="Arrival delay in minutes", title="Histogram of arrival delay in minutes") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+The distribution of departure delay in minutes is right skewed and uni-model, most of the departure delay in minutes are below 200 minutes.
+```{r}
+ggplot(data=sat, aes(x=departure_delay_in_minutes)) + geom_histogram(bins=30, fill="steelblue") +
+  labs(x="Departure delay in minutes", title="Histogram of departure delay in minutes") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+The distribution of flight distance is bi-model and right skewed, most of the flight distances are distributed around 2000 km.
+```{r}
+ggplot(data=sat, aes(x=flight_distance)) + geom_histogram(bins=30, fill="steelblue") +
+  labs(x="Flight distance", title="Histogram of flight distance") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Calculate the proporation of satisfaction rate by gender, the proporation of female customers who are satisfied with the flight is higher than the proporation of male customers who are satisfied with the flight. The proporation of female customers who are satisfied with the flight is about 60%, the proporation of male customers who are satisfied with the flight is about 40%.
+```{r}
+sat %>% group_by(gender) %>% summarise(percent=mean(satisfaction_v2=="satisfied")) %>%
+  ggplot(aes(x=gender, y=percent)) + geom_bar(stat="identity", fill="steelblue") +
+  labs(y="Satisfaction Rate", x="Gender", title="Satisfaction rate by gender") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Calculate the proporation of satisfaction rate by customer type, the proporation of loyal customers who are satisfied with the flight is higher than the proporation of disloyal customers who are satisfied with the flight. The proporation of loyal customers who are satisfied with the flight is about 62%, the proporation of disloyal customers who are satisfied with the flight is about 24%.
+
+```{r}
+sat %>% group_by(customer_type) %>% summarise(percent=mean(satisfaction_v2=="satisfied")) %>%
+  ggplot(aes(x=customer_type, y=percent)) + geom_bar(stat="identity", fill="steelblue") +
+  labs(y="Satisfaction Rate", x="Customer Type", title="Satisfaction rate by customer type") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Calculate the proporation of satisfaction rate by class, the proporation of customers from business class who are satisfied with the flight is higher than the proporation of customers from other two classes who are satisfied with the flight. The proporation of customers from business class who are satisfied with the flight is about 71%, the proporation of customers from economy class who are satisfied with the flight is about 39%, the proporation of customers from economy plus class who are satisfied with the flight is about 43%.
+
+```{r}
+sat %>% group_by(class) %>% summarise(percent=mean(satisfaction_v2=="satisfied")) %>%
+  ggplot(aes(x=class, y=percent)) + geom_bar(stat="identity", fill="steelblue") +
+  labs(y="Satisfaction Rate", x="Class", title="Satisfaction rate by class") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Calculate the proporation of satisfaction rate by traval type, the proporation of customers from business traval who are satisfied with the flight is higher than the proporation of customers from personal travel who are satisfied with the flight. The proporation of customers from business traval who are satisfied with the flight is about 58%, the proporation of customers from personal travel who are satisfied with the flight is about 47%.
+```{r}
+sat %>% group_by(type_of_travel) %>% summarise(percent=mean(satisfaction_v2=="satisfied")) %>%
+  ggplot(aes(x=type_of_travel, y=percent)) + geom_bar(stat="identity", fill="steelblue") +
+  labs(y="Satisfaction Rate", xlab="Type of travel", title="Satisfaction rate by type of travel") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+### Modeling
+Split the data into training dataset and test dataset. Separating data into training and testing sets is an important part of evaluating data mining models. Typically, when we separate a data set into a training set and testing set, most of the data is used for training, and a smaller portion of the data is used for testing. Analysis Services randomly samples the data to help ensure that the testing and training sets are similar. By using similar data for training and testing, we can minimize the effects of data discrepancies and better understand the characteristics of the model. Here we will plit randomly this data set into 70% train and 30% test.
+After spliting, there are 90640 observations in the train dataset, and 38847 observations in the test dataset.
+```{r echo=F}
+train_index <- sample(1:nrow(sat), nrow(sat)*0.7)
+train <- sat[train_index, ]
+test <- sat[-train_index, ]
+dim(train)
+dim(test)
+```
+
+#### Logistic Regression
+Logistic regression is the appropriate regression analysis to conduct when the dependent variable is dichotomous (binary).  Like all regression analyses, the logistic regression is a predictive analysis.  Logistic regression is used to describe data and to explain the relationship between one dependent binary variable and one or more nominal, ordinal, interval or ratio-level independent variables. Here the satisfacton contains only two unique value, so we can apply logistic here, use the satisfacton as the response variable, and all other variables except ID as the predictors.
+
+```{r}
+glm.mod <- glm(satisfaction_v2~., train[, -1], family = binomial)
+summary(glm.mod)
+probs <- predict(glm.mod, test, type="response")
+preds <- ifelse(probs>0.5, "satisfied", "neutral or dissatisfied")
+mean(preds==test$satisfaction_v2)
+```
+
+All the p-value of the predictors is less than 0.05, so all the predictors are significant, the positive coefficient means that the predictor will increase the probablity of satisfaction, the negative coefficeint means that the predictor will decrease the probability of satisfaction, the auccuray of the model is 0.836.
+
+#### KNN
+K nearest neighbors is a simple algorithm that stores all available cases and classifies new cases based on a similarity measure (e.g., distance functions). KNN has been used in statistical estimation and pattern recognition already in the beginning of 1970’s as a non-parametric technique.  K-nearest neighbors (KNN) algorithm uses 'feature similarity' to predict the values of new datapoints which further means that the new data point will be assigned a value based on how closely it matches the points in the training set. 
+
+Here will use all available numeric variables, apply a KNN model with k=2 to predict the satisfaction of the customers.
+```{r}
+library(class)
+train.x <- as.matrix(train[, -c(1:7)])
+test.x <- as.matrix(test[, -c(1:7)])
+# k = 2
+preds <- knn(train.x, test.x, train$satisfaction_v2, k=2)
+cm <- table(preds, test$satisfaction_v2)
+mean(preds==test$satisfaction_v2)
+```
+
+The accuray of the KNN(k=2) is 0.716.
+
+
+#### LDA
+
+Discriminant analysis is used to predict the probability of belonging to a given class (or category) based on one or multiple predictor variables. It works with continuous and/or categorical predictor variables.
+
+Compared to logistic regression, the discriminant analysis is more suitable for predicting the category of an observation in the situation where the outcome variable contains more than two classes. Additionally, it’s more stable than the logistic regression for multi-class classification problems.
+
+The LDA algorithm starts by finding directions that maximize the separation between classes, then use these directions to predict the class of individuals. These directions, called linear discriminants, are a linear combinations of predictor variables.
+
+LDA assumes that predictors are normally distributed (Gaussian distribution) and that the different classes have class-specific means and equal variance/covariance.
+```{r}
+library(MASS)
+lda.mod <- lda(satisfaction_v2~., train[, -1])
+lda.mod
+plot(lda.mod)
+lda.pred <- predict(lda.mod, test)
+mean(lda.pred$class==test$satisfaction_v2)
+```
+
+The accuray of the model is 0.837.
+
+
+### Conclusion
+Based on the computation above, we can found that the LDA model has the highest accuray rate, so the LDA model is the best classification model among the three models. The accuray is 0.837, it is moderate strong.
